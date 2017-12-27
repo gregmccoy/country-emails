@@ -1,0 +1,39 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="https://grmc.io/static/flask/libs/bootstrap/css/bootstrap.min.css"/>
+    <script src="https://grmc.io/static/flask/libs/bootstrap/js/jquery.min.js"></script>
+    <script src="https://grmc.io/static/flask/libs/bootstrap/js/bootstrap.js"></script>
+    <script src="https://grmc.io/static/flask/libs/ace/ace.js"></script>
+  </head>
+  <body>
+      <div id="editor" style="height:100%; width: 100%; font-size: 14px;">{{ html }}</div>
+      <script>
+          var editor = ace.edit("editor");
+          editor.setTheme("ace/theme/monokai");
+          editor.getSession().setUseWrapMode(true);
+          editor.getSession().setMode("ace/mode/html");
+          old_value = editor.getValue();
+
+          setTimeout(check_diff, 2000);
+          function check_diff() {
+            console.log("checking difference");
+            if (old_value != editor.getValue()) {
+              console.log("Different Values!");
+              console.log(editor.getValue());
+              $.ajax({
+                  url: '/preview/',
+                  type: 'POST',
+                  data: { html: editor.getValue() },
+                  success: function(result) {
+                      console.log("Updated");
+                      $('#preview_id', window.parent.document).attr('src', '/preview/');
+                  }
+              });
+
+            }
+            old_value = editor.getValue();
+            setTimeout(check_diff, 2000);
+          }
+      </script>
+  </body>
+</html>
