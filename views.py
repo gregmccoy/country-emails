@@ -13,7 +13,7 @@ def randomword(length):
 def setup_session():
     user_id = randomword(32)
     session["user_id"] = user_id
-    for path in ["html/{}-email.html", "html/{}-result.html" , "html/{}-print.html"]:
+    for path in ["html/{}-email.html", "html/{}-result.html" , "html/{}-print"]:
         path = path.format(user_id)
         with open(path, "w+") as f:
             f.write("")
