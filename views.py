@@ -106,13 +106,13 @@ def result():
             result = f.read()
 
         with open("html/{}-print".format(user_id), 'r+') as f:
-            print = f.readlines()
+            print_value = f.readlines()
     else:
         user_id = setup_session()
         result = ""
-        print = ""
+        print_value = ""
 
-    return render_template("result.html", html=result, print=print)
+    return render_template("result.html", html=result, print=print_value)
 
 
 def write_outfile(obj, user_id):
@@ -128,7 +128,7 @@ def write_results(job, obj, user_id):
             o.write(html)
 
 
-def write_print_out(print, user_id):
+def write_print_out(print_value, user_id):
     with open("html/{}-print".format(user_id), 'w+') as o:
-        content = print.content
+        content = print_value.content
         o.writelines(content)
