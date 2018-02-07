@@ -20,4 +20,4 @@ htmlcov
 .coverage.*
 *,cover
 result.html
-html/
+html/*
