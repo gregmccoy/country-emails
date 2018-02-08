@@ -89,7 +89,7 @@ def str_to_dict(data):
         result = ast.literal_eval(data)
         return result
     except:
-        return "Error getting result data"
+        return ["Error getting result data"]
 
 
 @app.route('/result/', methods=["GET", "POST"])
@@ -118,6 +118,8 @@ def country():
 def replace():
     user = UserSession()
     country = user.template.country
+    if not country:
+        country = "CA"
     save = False
     with open('data/replace_{}.csv'.format(country), 'r') as f:
         data = f.read()
