@@ -6,42 +6,31 @@
     <script src="https://grmc.io/static/flask/libs/ace/ace.js"></script>
   </head>
   <body>
-      <div id="editor" style="height:100%; width: 100%; font-size: 14px;">{{ html }}</div>
+      <div id="replace_editor" style="height:100%; width: 100%; font-size: 14px;">{{ data }}</div>
       <script>
-          var editor = ace.edit("editor");
+          var editor = ace.edit("replace_editor");
           editor.setTheme("ace/theme/monokai");
           editor.getSession().setUseWrapMode(true);
-          editor.getSession().setMode("ace/mode/html");
+          editor.getSession().setMode("ace/mode/csv");
           old_value = editor.getValue();
 
-          setTimeout(check_diff, 2000);
-          function check_diff() {
-            console.log("checking difference");
+          setTimeout(check_diff_replace, 2000);
+          function check_diff_replace() {
+            console.log("Check diff");
             if (old_value != editor.getValue()) {
-              console.log("Different Values!");
-              console.log(editor.getValue());
               $.ajax({
-                  url: '/preview/',
+                  url: '/replace/',
                   type: 'POST',
                   data: { html: editor.getValue() },
                   success: function(result) {
                       console.log("Updated");
-                      $('#preview_id', window.parent.document).attr('src', '/preview/');
-                  }
-              });
-              $.ajax({
-                  url: '/result/',
-                  type: 'POST',
-                  data: { html: editor.getValue() },
-                  success: function(result) {
-                      console.log("Updated");
-                      $('#preview_id', window.parent.document).attr('src', '/preview/');
+                      $('#replace_id', window.parent.document).attr('src', '/replace/');
                   }
               });
 
             }
             old_value = editor.getValue();
-            setTimeout(check_diff, 2000);
+            setTimeout(check_diff_replace, 2000);
           }
       </script>
   </body>

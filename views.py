@@ -1,134 +1,135 @@
-from flask import Flask, render_template, request, redirect, session
-from init import app
-from fix_emails.matthew import Matthew
-from fix_emails.job import Job
+from flask import Flask, render_template, request, redirect, session, render_template_string
 import random, string
 import sys
 import os
+import ast
+
+from init import app, db
+from models import Template
+
+from fix_emails.matthew import Matthew
+from fix_emails.job import Job
+
+
 
 def randomword(length):
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(length))
 
-def setup_session():
-    user_id = randomword(32)
-    session["user_id"] = user_id
-    for path in ["html/{}-email.html", "html/{}-result.html" , "html/{}-print"]:
-        path = path.format(user_id)
-        with open(path, "w+") as f:
-            f.write("")
-    return user_id
 
-
-# So we can capture print statements
-class WritableObject(object):
-
+class UserSession(object):
     def __init__(self):
-        self.content = []
+        if session.get("user_id", ""):
+            # Old session
+            self.user_id = session["user_id"]
+            self.template = Template.query.filter_by(session=self.user_id).first()
 
-    def write(self, string):
-        self.content.append(string)
+        if not self.template:
+            # New session
+            self.user_id = randomword(32)
+            session["user_id"] = self.user_id
+            self.template = Template(self.user_id)
+            db.session.add(self.template)
+            db.session.commit()
 
 
 @app.route('/', methods=["GET", "POST"])
 def index():
-    user_id = session.get("user_id", "")
-    if not user_id:
-        user_id = setup_session()
+    user = UserSession()
 
     if request.method == "POST":
         form = request.form
         country = form.get("country_select", "CA")
         source = form.get("source", "")
 
-        session['country'] = country
-        session['source'] = source
-
-        print_out = WritableObject()
-        sys.stdout = print_out
+        user.template.country = country
+        user.template.source = source
 
         job = Job(False, input_type="qt")
 
-        obj = job.html_email("html/{}-email.html".format(user_id), source_code=source, country=country)
-        write_outfile(obj, user_id)
+        obj = job.process_email(user.template.html, source_code=source, country=country)
+        user.template.html = obj.get_content()
+        user.template.result_images = str(obj.get_images())
+        user.template.result_links = str(obj.get_links())
+        user.template.result_source = str(obj.get_source_codes())
+        user.template.result_notes = str(obj.notifications)
+        db.session.add(user.template)
+        db.session.commit()
 
+        return render_template("index.html", result=True, country=user.template.country)
 
-        obj = job.run_results("html/{}-email.html".format(user_id))
-        write_results(job, obj, user_id)
-        html = job.html_result(obj)
-
-        write_print_out(print_out, user_id)
-
-        return render_template("index.html", result=html)
-
-    return render_template("index.html", country=session.get("country", ""))
+    return render_template("index.html", country=user.template.country)
 
 
 @app.route('/editor/')
 def editor():
-    user_id = session.get("user_id", "")
-    print("User ID - {}".format(user_id))
-
-    if user_id:
-        with open("html/{}-email.html".format(user_id), 'r+') as f:
-            html = f.read()
-    else:
-        user_id = setup_session()
-        html = ""
+    user = UserSession()
+    html = user.template.html
     return render_template("editor.html", html=html)
 
 
 @app.route('/preview/', methods=["GET", "POST"])
 def preview():
-    user_id = session.get("user_id", "")
-    if user_id:
-        with open("html/{}-email.html".format(user_id), 'r+') as f:
-            html = f.read()
-
-        if request.method == "POST":
-            form = request.form
-            if form["html"] and form["html"] != html:
-                html = form["html"]
-                with open("html/{}-email.html".format(user_id), 'w+') as w:
-                    w.write(html)
+    user = UserSession()
+    if request.method == "POST":
+        form = request.form
+        if form["html"] and form["html"] != user.template.html:
+            html = form["html"]
+            user.template.html = html
+            db.session.add(user.template)
+            db.session.commit()
     else:
-        user_id = setup_session()
-        html = ""
-
+        html = user.template.html
     return render_template("preview.html", html=html)
+
+
+def str_to_dict(data):
+    try:
+        result = ast.literal_eval(data)
+        return result
+    except:
+        return "Error getting result data"
 
 
 @app.route('/result/', methods=["GET", "POST"])
 def result():
-    user_id = session.get("user_id", "")
-    if user_id:
-        with open("html/{}-result.html".format(user_id), 'r+') as f:
-            result = f.read()
-
-        with open("html/{}-print".format(user_id), 'r+') as f:
-            print_value = f.readlines()
-    else:
-        user_id = setup_session()
-        result = ""
-        print_value = ""
-
-    return render_template("result.html", html=result, print=print_value)
+    user = UserSession()
+    images = str_to_dict(user.template.result_images)
+    links = str_to_dict(user.template.result_links)
+    source = str_to_dict(user.template.result_source)
+    notes = str_to_dict(user.template.result_notes)
+    return render_template("result.html", images=images, links=links, source=source, notes=notes)
 
 
-def write_outfile(obj, user_id):
-    with open("html/{}-email.html".format(user_id), 'w+') as o:
-        data = obj.get_content()
-        o.write(data)
+@app.route('/country/', methods=["GET", "POST"])
+def country():
+    user = UserSession()
+    if request.method == "POST":
+        form = request.form
+        user.template.country = form["country"]
+        print("Country {}".format(user.template.country))
+        db.session.add(user.template)
+        db.session.commit()
+    return render_template_string("")
 
 
-def write_results(job, obj, user_id):
-    html = job.html_result(obj)
-    if html:
-        with open("html/{}-result.html".format(user_id), 'w+') as o:
-            o.write(html)
+@app.route('/replace/', methods=["GET", "POST"])
+def replace():
+    user = UserSession()
+    country = user.template.country
+    save = False
+    with open('data/replace_{}.csv'.format(country), 'r') as f:
+        data = f.read()
+
+    if request.method == "POST":
+        form = request.form
+        print(form["html"])
+        if form["html"] and form["html"] != data:
+            with open('data/replace_{}.csv'.format(country), 'w') as f:
+                f.write(form["html"])
+            save = True
+            print("Saved")
+            data = form["html"]
+    return render_template("replace.html", data=data, save=save)
 
 
-def write_print_out(print_value, user_id):
-    with open("html/{}-print".format(user_id), 'w+') as o:
-        content = print_value.content
-        o.writelines(content)

@@ -2,38 +2,65 @@
 
 {% block content %}
   <div style="margin-top: -15px">
-    {% if result %}
     <ul class="nav nav-tabs">
       <li id="code_tab_id" class="active"><a href="#">Code</a></li>
       <li id="result_tab_id"><a href="#">Results</a></li>
+      <li id="replace_tab_id"><a href="#">Replace List</a></li>
     </ul>
-    {% endif %}
     <iframe id="code_id" height="89%" width="59%" src="/editor/"></iframe>
-    {% if result %}
-      {{ print }}
-      <iframe id="result_id" height="89%" width="59%" src="/result/"></iframe>
-      {#
-      <div id="result_id" style="width: 59%;" width="59%">
-        {{ result | safe }}
-      </div>
-      #}
-    {% endif %}
+    <iframe id="result_id" height="89%" width="59%" src="/result/">
+      {% if not result %}
+      No results yet, click Run to generate results
+      {% endif %}
+    </iframe>
+    <iframe id="replace_id" height="89%" width="59%" src="/replace/"></iframe>
     <iframe id="preview_id" height="89%" width="39%" src="/preview/"></iframe>
       <script>
         $(document).ready(function() {
             $("#result_id").hide();
+            $("#replace_id").hide();
         });
         $("#result_tab_id").click(function() {
           $("#result_id").show();
           $("#result_tab_id").addClass("active");
           $("#code_id").hide();
           $("#code_tab_id").removeClass("active");
+          $("#replace_id").hide();
+          $("#replace_tab_id").removeClass("active");
         });
         $("#code_tab_id").click(function() {
           $("#code_id").show();
           $("#code_tab_id").addClass("active");
           $("#result_id").hide();
           $("#result_tab_id").removeClass("active");
+          $("#replace_id").hide();
+          $("#replace_tab_id").removeClass("active");
+        });
+        $("#replace_tab_id").click(function() {
+          $("#code_id").hide();
+          $("#code_tab_id").removeClass("active");
+          $("#result_id").hide();
+          $("#result_tab_id").removeClass("active");
+          $("#replace_id").show();
+          $("#replace_tab_id").addClass("active");
+        });
+        $("#country_select").change(function() {
+            var country = $("#country_select option:selected").val()
+            if (country == "CA") {
+              $("#flag-id").attr("src", "https://grmc.io/static/flask/imgs/ca.png");
+            } else if (country == "US") {
+              $("#flag-id").attr("src", "https://grmc.io/static/flask/imgs/us.png");
+            } else if (country == "GB") {
+              $("#flag-id").attr("src", "https://grmc.io/static/flask/imgs/gb.png");
+            };
+            $.ajax({
+              url: '/country/',
+              type: 'POST',
+              data: { country: country },
+              success: function(result) {
+                  $("#replace_id").attr("src", $("#replace_id").attr("src"));
+              }
+            });
         });
       </script>
   </div>

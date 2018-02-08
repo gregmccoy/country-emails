@@ -1,5 +1,70 @@
-{% for p in print %}
-  {{ p }}
-  <br>
-{% endfor %}
-{{ html | safe }}
+<html>
+  <head>
+      <link rel="stylesheet" type="text/css" href="https://grmc.io/static/flask/libs/bootstrap/css/bootstrap.min.css"/>
+      <script src="https://grmc.io/static/flask/libs/bootstrap/js/jquery.min.js"></script>
+      <script src="https://grmc.io/static/flask/libs/bootstrap/js/bootstrap.js"></script>
+  </head>
+  <body>
+    {% if notes %}
+      <table class="table">
+        <tr class="active">
+          <th>Changes</th>
+        </tr>
+        {% for note in notes %}
+        <tr>
+          <td class="active">
+            {{ note }}
+          </td>
+        <tr>
+        {% endfor %}
+      </table>
+    {% endif %}
+    {% if source %}
+    <table class="table">
+      <tr class="active">
+        <th>Source Codes</th>
+      </tr>
+      {% for code in source %}
+      <tr class="active">
+        <td>
+        {{ code }}
+        <br>
+        </td>
+      <tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+    {% if links %}
+    <table class="table">
+      <tr class="active">
+        <th>Links</th>
+      </tr>
+      {% for link in links %}
+      <tr>
+        <td class="active">
+          <a href="{{ link }}">{{ link }}</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+    {% if images %}
+    <table class="table">
+      <tr class="active">
+        <th>Image</th>
+        <th>Alt Text</th>
+      </tr>
+      {% for image in images %}
+      <tr class="active">
+        <td>
+          <img src="{{ image.src }}">
+        </td>
+        <td>
+          {{ image.alt }}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+    <br>
+  </body>
