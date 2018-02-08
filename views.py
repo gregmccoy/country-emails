@@ -19,6 +19,7 @@ def randomword(length):
 
 class UserSession(object):
     def __init__(self):
+        self.template = ""
         if session.get("user_id", ""):
             # Old session
             self.user_id = session["user_id"]
