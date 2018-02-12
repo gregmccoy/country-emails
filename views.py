@@ -3,6 +3,8 @@ import random, string
 import sys
 import os
 import ast
+import csv
+import collections
 
 from init import app, db
 from models import Template
@@ -121,18 +123,46 @@ def replace():
     if not country:
         country = "CA"
     save = False
-    with open('data/replace_{}.csv'.format(country), 'r') as f:
-        data = f.read()
-
     if request.method == "POST":
         form = request.form
-        print(form["html"])
-        if form["html"] and form["html"] != data:
-            with open('data/replace_{}.csv'.format(country), 'w') as f:
-                f.write(form["html"])
-            save = True
-            print("Saved")
-            data = form["html"]
-    return render_template("replace.html", data=data, save=save)
+        csv_data = []
+        form_data = {}
+
+        for key, item in form.items():
+            form_data[key] = item
+
+        type = form_data["type"]
+
+        del form_data["type"]
+
+        count = 1
+        while form_data.get("{}-old".format(count), ""):
+            if form_data["{}-old".format(count)] != "*DEL":
+                csv_data.append(
+                    (
+                        form_data["{}-old".format(count)],
+                        form_data["{}-new".format(count)]
+                    )
+                )
+            count += 1
+
+        with open('data/{}_{}.csv'.format(type, country), 'w', newline='', encoding="utf-8") as f:
+            writer = csv.writer(f, delimiter='|', lineterminator='\n')
+            writer.writerows(csv_data)
+        save = True
+
+    csv_data = { "replace": [], "links": [] }
+    with open('data/replace_{}.csv'.format(country), 'r', newline='') as f:
+        data = csv.reader(f, delimiter='|')
+        for item in data:
+            csv_data["replace"].append(item)
+
+    with open('data/links_{}.csv'.format(country), 'r', newline='') as f:
+        data = csv.reader(f, delimiter='|')
+        for item in data:
+            csv_data["links"].append(item)
+
+
+    return render_template("replace.html", data=csv_data, save=save, country=country)
 
 
