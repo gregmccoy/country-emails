@@ -2,81 +2,139 @@
 
 
 {% block content %}
-<div class="container">
-<script>
-    $(document).ready(function() {
-      $("#replace-save").click(function() {
+<div class="page">
+  <div class="container">
+  <script>
+      $(document).ready(function() {
+        $("#save-notify").hide();
+        $(".page").on("click", ".replace-save", function() {
+          $.ajax({
+              url: '/replace/',
+              type: 'POST',
+              data: $("#links_item_form").serialize(),
+              success: function(result) {
+                $(".replace-save-swap").hide();
+                <!--$("#replace_item_form").submit(); -->
 
-        $.ajax({
-            url: '/replace/',
-            type: 'POST',
-            data: $("#links_item_form").serialize(),
-            success: function(result) {
-              $("#replace_item_form").submit();
-            }
+                $("#save-notify").fadeIn(1500);
+                $("#save-notify").fadeOut(1500);
+              },
+              error: function(XMLHttpRequest, textStatus, errorThrown) {
+                console.log(textStatus);
+              }
+          });
         });
-      });
-      $(".replace-delete").click(function() {
-        index = $(this).attr("data-loop-index");
-        $("#replace-text-old-" + index).parent().parent().addClass("hidden");
-        $("#replace-text-old-" + index).val("*DEL");
-        $("#replace-text-new-" + index).val("*DEL");
-      });
-    });
-</script>
-<table class="table table-striped">
-  <tr>
-    <th>Old</th>
-    <th>New</th>
-    <th></th>
-  </tr>
-  <form id="links_item_form" action="/replace/" method="POST">
-    <h2>Links</h2>
-    <input type="hidden" name="type" value="links">
-    {% for list in data.links %}
-    <tr>
-      <td>
-        <input type="text" name="{{ loop.index}}-old" id="replace-text-old-{{ loop.index }}" value="{{ list.0 }}" style="width: 100%;"/>
-      </td>
-      <td>
-        <input type="text" name="{{ loop.index }}-new" id="replace-text-new-{{ loop.index }}" value="{{ list.1 }}" style="width: 100%;"/>
-      </td>
-      <td>
-        <input type="button" data-loop-index="{{ loop.index }}" id="delete-btn-{{ loop.index }}" class="replace-delete btn btn-danger" value="Delete">
-      </td>
-    </tr>
-    {% endfor %}
-  </form>
-</table>
+        $(".page").on("click", ".replace-delete", function() {
+          index = $(this).attr("data-loop-index");
+          $("#replace-text-old-" + index).parent().parent().addClass("hidden");
+          $("#replace-text-old-" + index).val("*DEL");
+          $("#replace-text-new-" + index).val("*DEL");
+          $(".replace-save").click();
+        });
 
-<table class="table table-striped">
-  <tr>
-    <th>Old</th>
-    <th>New</th>
-    <th></th>
-  </tr>
-  <form id="replace_item_form" action="/replace/" method="POST">
-    <h2>Word List</h2>
-    <input type="hidden" name="type" value="replace">
-    {% for list in data.replace %}
+        $("#add-links").click(function() {
+          var index = $("#table-links tr:last").find(".replace-delete").attr("data-loop-index");
+          var index = Number(index) + 1;
+
+          $("#table-links tr:first").after('<tr> \
+              <td> \
+              <input type="text" name="' + index + '-old" id="replace-text-old-' +  index + '" style="width: 100%;" value=""/>\
+              </td> \
+              <td> \
+              <input type="text" name="' + index + '-new" id="replace-text-new-' + index + '" style="width: 100%;" value=""/>\
+              </td> \
+              <td> \
+              <input type="button" class="replace-save replace-save-swap btn btn-info" style="font-size: 15px; width: 100px;" value="Save"> \
+              <input type="button" data-loop-index="' + index + '" id="delete-btn-' + index + '" class="replace-delete btn btn-danger" value="Delete"> \
+              </td> \
+              </tr>');
+          });
+        $("#add-replace").click(function() {
+          var index = $("#table-replace tr:last").find(".replace-delete").attr("data-loop-index");
+          var index = Number(index) + 1;
+
+          $("#table-replace tr:first").after('<tr> \
+              <td> \
+              <input type="text" name="' + index + '-old" id="replace-text-old-' +  index + '" style="width: 100%;" value=""/>\
+              </td> \
+              <td> \
+              <input type="text" name="' + index + '-new" id="replace-text-new-' + index + '" style="width: 100%;" value=""/>\
+              </td> \
+              <td> \
+              <input type="button" class="replace-save replace-save-swap btn btn-info" style="font-size: 15px; width: 100px;" value="Save"> \
+              <input type="button" data-loop-index="' + index + '" id="delete-btn-' + index + '" class="replace-delete btn btn-danger" value="Delete"> \
+              </td> \
+              </tr>');
+          });
+      });
+  </script>
+  <div class="col-md-4">
+    <h2>Links</h2>
+  </div>
+  <div class="col-md-2 col-md-offset-6" style="padding-top: 20px;">
+    <a href="#table-links" id="add-links" class="btn btn-success pull-right" style="width: 110px;">Add Links</a>
+  </div>
+  <form id="links_item_form" action="/replace/" method="POST">
+  <table class="table table-striped" id="table-links">
     <tr>
-      <td>
-        <input type="text" name="{{ loop.index}}-old" id="replace-text-old-{{ loop.index }}" value="{{ list.0 }}" style="width: 100%;"/>
-      </td>
-      <td>
-        <input type="text" name="{{ loop.index }}-new" id="replace-text-new-{{ loop.index }}" value="{{ list.1 }}" style="width: 100%;"/>
-      </td>
-      <td>
-        <input type="button" data-loop-index="{{ loop.index }}" id="delete-btn-{{ loop.index }}" class="replace-delete btn btn-danger" value="Delete">
-      </td>
+      <th>Old</th>
+      <th>New</th>
+      <th></th>
     </tr>
-    {% endfor %}
+      <input type="hidden" name="type" value="links">
+      {% for list in data.links %}
+      <tr>
+        <td>
+          <input type="text" name="{{ loop.index}}-old" id="replace-text-old-{{ loop.index }}" value="{{ list.0 }}" style="width: 100%;"/>
+        </td>
+        <td>
+          <input type="text" name="{{ loop.index }}-new" id="replace-text-new-{{ loop.index }}" value="{{ list.1 }}" style="width: 100%;"/>
+        </td>
+        <td>
+          <input type="button" data-loop-index="{{ loop.index }}" id="delete-btn-{{ loop.index }}" class="replace-delete btn btn-danger" value="Delete">
+        </td>
+      </tr>
+      {% endfor %}
+    </form>
+  </table>
+
+  <div class="col-md-4">
+    <h2>Word List</h2>
+  </div>
+  <div class="col-md-2 col-md-offset-6" style="padding-top: 20px;">
+    <a href="#table-replace" id="add-replace" class="btn btn-success pull-right" style="width: 110px;">Add Words</a>
+  </div>
+  <form id="replace_item_form" action="/replace/" method="POST">
+  <table class="table table-striped" id="table-replace">
+    <tr>
+      <th>Old</th>
+      <th>New</th>
+      <th></th>
+    </tr>
+      <input type="hidden" name="type" value="replace">
+      {% for list in data.replace %}
+      <tr>
+        <td>
+          <input type="text" name="{{ loop.index}}-old" id="replace-text-old-{{ loop.index }}" value="{{ list.0 }}" style="width: 100%;"/>
+        </td>
+        <td>
+          <input type="text" name="{{ loop.index }}-new" id="replace-text-new-{{ loop.index }}" value="{{ list.1 }}" style="width: 100%;"/>
+        </td>
+        <td>
+          <input type="button" data-loop-index="{{ loop.index }}" id="delete-btn-{{ loop.index }}" class="replace-delete btn btn-danger" value="Delete">
+        </td>
+      </tr>
+      {% endfor %}
+  </table>
   </form>
-</table>
-</div>
-<div style="position: fixed; height: 50px; bottom: 0; width: 100%;">
-  <div class="pull-right" style="background: #DDDDDD; margin-right: 10px; margin-bottom: 20px; padding: 10px 10px 10px 10px;">
-    <input type="button" id="replace-save" class="btn btn-info" style="font-size: 15px; width: 100px;" value="Save">
+  </div>
+  <div style="position: fixed; height: 50px; bottom: 0; width: 100%;">
+    <div class="pull-right" style="border-top-right-radius: 15px; border-top-left-radius: 15px; background: #DDDDDD; margin-right: 10px; margin-bottom: 20px; padding: 10px 10px 10px 10px;">
+      <input type="button" class="replace-save btn btn-info" style="font-size: 15px; width: 100px;" value="Save">
+    </div>
+    <div id="save-notify" class="pull-right" style="border-top-right-radius: 15px; border-top-left-radius: 15px; background: #DDDDDD; margin-right: 10px; margin-bottom: 20px; padding: 10px 10px 10px 10px;">
+      <p style="color: blue; font-size: 16px;">Changes Saved</p>
+    </div>
   </div>
 </div>
 {% endblock %}
