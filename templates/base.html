@@ -53,6 +53,29 @@
       } else if (country == "GB") {
         $("#flag-id").attr("src", "https://grmc.io/static/flask/imgs/gb.png");
       };
+      $("#country_select").change(function() {
+          var country = $("#country_select option:selected").val()
+          if (country == "CA") {
+            $("#flag-id").attr("src", "https://grmc.io/static/flask/imgs/ca.png");
+          } else if (country == "US") {
+            $("#flag-id").attr("src", "https://grmc.io/static/flask/imgs/us.png");
+          } else if (country == "GB") {
+            $("#flag-id").attr("src", "https://grmc.io/static/flask/imgs/gb.png");
+          };
+          $.ajax({
+              url: '/country/',
+              type: 'POST',
+              data: $("#country_select").serialize(),
+              success: function(result) {
+                console.log("Success");
+                console.log(result);
+              },
+              error: function(XMLHttpRequest, textStatus, errorThrown) {
+                console.log(textStatus);
+              }
+          });
+      });
+
     </script>
 
     {% block content %}

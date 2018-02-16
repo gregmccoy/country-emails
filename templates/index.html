@@ -29,17 +29,6 @@
           $("#result_id").hide();
           $("#result_tab_id").removeClass("active");
         });
-        $("#country_select").change(function() {
-            var country = $("#country_select option:selected").val()
-            if (country == "CA") {
-              $("#flag-id").attr("src", "https://grmc.io/static/flask/imgs/ca.png");
-            } else if (country == "US") {
-              $("#flag-id").attr("src", "https://grmc.io/static/flask/imgs/us.png");
-            } else if (country == "GB") {
-              $("#flag-id").attr("src", "https://grmc.io/static/flask/imgs/gb.png");
-            };
-        });
-
       </script>
   </div>
 {% endblock %}

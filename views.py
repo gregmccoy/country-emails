@@ -109,11 +109,13 @@ def country():
     user = UserSession()
     if request.method == "POST":
         form = request.form
-        user.template.country = form["country"]
-        print("Country {}".format(user.template.country))
+        try:
+            user.template.country = form["country"]
+        except:
+            user.template.country = form["country_select"]
         db.session.add(user.template)
         db.session.commit()
-    return render_template_string("")
+    return render_template_string("Country Updated to {}".format(user.template.country))
 
 
 @app.route('/replace/', methods=["GET", "POST"])
