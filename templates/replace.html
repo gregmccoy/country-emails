@@ -14,7 +14,7 @@
               data: $("#links_item_form").serialize(),
               success: function(result) {
                 $(".replace-save-swap").hide();
-                <!--$("#replace_item_form").submit(); -->
+                $("#replace_item_form").submit();
 
                 $("#save-notify").fadeIn(1500);
                 $("#save-notify").fadeOut(1500);
@@ -35,8 +35,11 @@
         $("#add-links").click(function() {
           var index = $("#table-links tr:last").find(".replace-delete").attr("data-loop-index");
           var index = Number(index) + 1;
+          $('html, body').animate({
+              scrollTop: $("#table-links tr:last").offset().top
+          }, 1000);
 
-          $("#table-links tr:first").after('<tr> \
+          $("#table-links tr:last").after('<tr> \
               <td> \
               <input type="text" name="' + index + '-old" id="replace-text-old-' +  index + '" style="width: 100%;" value=""/>\
               </td> \
@@ -52,8 +55,11 @@
         $("#add-replace").click(function() {
           var index = $("#table-replace tr:last").find(".replace-delete").attr("data-loop-index");
           var index = Number(index) + 1;
+          $('html, body').animate({
+              scrollTop: $("#table-replace tr:last").offset().top
+          }, 1000);
 
-          $("#table-replace tr:first").after('<tr> \
+          $("#table-replace tr:last").after('<tr> \
               <td> \
               <input type="text" name="' + index + '-old" id="replace-text-old-' +  index + '" style="width: 100%;" value=""/>\
               </td> \
@@ -125,7 +131,7 @@
     <h2>Word List</h2>
   </div>
   <div class="col-md-2 col-md-offset-6" style="padding-top: 20px;">
-    <a href="#table-replace" id="add-replace" class="btn btn-success pull-right" style="width: 110px;">Add Words</a>
+    <a href="#" id="add-replace" class="btn btn-success pull-right" style="width: 110px;">Add Words</a>
   </div>
   <form id="replace_item_form" action="/replace/" method="POST">
   <table class="table table-striped" id="table-replace">
